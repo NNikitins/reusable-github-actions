@@ -1,0 +1,69 @@
+name: Build and test ASP.NET Core Backend
+description: 'Installs a package and runs a python script'
+
+inputs:
+  dotnet-version:  # id of input
+    description: '.NET SDK version'
+    required: true
+    default: '5.0.x'
+  project-csproj-path:
+    description: 'Path to .csproj file, which should be built and restored-> dotnet build; dotnet restore'
+    required: true
+  paths-to-dotnet-tests:
+    description: 'Path to .csproj files that should be used in tests. !IMPORTANT!-Write in comma separated way!!'
+    required: false
+  # machine-name:
+  #   description: 'Name of machine where is executed build and test'
+  #   required: true
+  #   type: choice
+  #   options:
+  #   - windows-latest
+  #   - [self-hosted, windows, agent-win]
+        
+outputs:
+  nuget-package-version-number:
+    description: "Nuget Package Version"
+    value: ${{ steps.get-version-for-nuget.outputs.nuget_version_number }}
+
+runs:
+  using: "composite"
+  steps:
+  - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+    uses: actions/setup-dotnet@v1
+    with:
+      dotnet-version: ${{ inputs.dotnet-version }}
+
+  - name: Nerdbank.GitVersioning
+    if: ${{ inputs.use-nbgv-in-root == 'true'}}
+    run: |
+          dotnet tool install --tool-path . nbgv
+          nbgv get-version -f json -p .
+    shell: cmd
+
+  - name: Nerdbank.GitVersioning
+    id: nbgv
+    uses: dotnet/nbgv@master 
+    with:
+      setAllVars: true
+
+  - name: Get version of Nuget
+    id: get-version-for-nuget
+    run: |
+      $version = "${{ steps.nbgv.outputs.NuGetPackageVersion }}".Substring(0, "${{ steps.nbgv.outputs.NuGetPackageVersion }}".IndexOf('-'))
+      echo "::set-output name=nuget_version_number::$version"
+    shell: powershell
+
+  - name: Restore .NET dependencies
+    run: dotnet restore ${{ inputs.project-csproj-path }}
+    shell: cmd
+      
+  - name: Build
+    run:  dotnet build ${{ inputs.project-csproj-path }}
+    shell: cmd
+
+  - name: Run .NET Back-end Tests
+    run: |
+      $projects = "${{ inputs.paths-to-dotnet-tests }}".split(",")
+      foreach ($project in $projects){ dotnet test $project }
+    shell: powershell
+      
