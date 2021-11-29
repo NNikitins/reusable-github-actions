@@ -33,13 +33,6 @@ runs:
     with:
       dotnet-version: ${{ inputs.dotnet-version }}
 
-  # - name: Nerdbank.GitVersioning
-  #   id: nbgv
-  #   run: |
-  #         dotnet tool install --tool-path . nbgv
-  #         nbgv get-version -f json -p .
-  #   shell: cmd
-
   - name: Nerdbank.GitVersioning
     id: nbgv
     uses: dotnet/nbgv@master 

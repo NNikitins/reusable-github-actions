@@ -1,0 +1,44 @@
+name: Build and test ASP.NET Core Project backend
+description: 'Build and test asp.net Project backend'
+
+inputs:
+  node-version:
+    description: 'Node.js Version'
+    required: false
+    default: '12.x'
+  client-app-path:
+    description: 'Path of ClientApp relative to the root'
+    required: true
+        
+outputs:
+  nuget-package-version-number:
+    description: "Nuget Package Version"
+    value: ${{ steps.get-version-for-nuget.outputs.nuget_version_number }}
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Set up Node.js ${{ inputs.node-version }}
+    uses: actions/setup-node@v1
+    with:
+      node-version: ${{ inputs.node-version }}
+  
+  - name: Cache npm dependencies
+    id: npm-cache
+    uses: actions/cache@v2
+    with: 
+      path: ${{ inputs.client-app-path }}\node_modules
+      key: ${{ runner.os }}-${{ hashFiles('${{ inputs.client-app-path }}\package-lock.json') }}
+
+  - name: Install npm dependencies
+    if: steps.npm-cache.outputs.cache-hit != 'true'
+    run: npm install --prefix ${{ client-app-path }}
+    shell: cmd
+
+  - name: Run the tests
+    run: | 
+      set CI=true
+      npm test --prefix ${{ client-app-path }}
+    shell: cmd
+      
