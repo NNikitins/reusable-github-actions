@@ -1,5 +1,5 @@
-name: Build and test ASP.NET Core Backend
-description: 'Installs a package and runs a python script'
+name: Build and test ASP.NET Core Project backend
+description: 'Build and test asp.net Project backend'
 
 inputs:
   dotnet-version:  # id of input
@@ -40,11 +40,11 @@ runs:
           nbgv get-version -f json -p .
     shell: cmd
 
-  - name: Nerdbank.GitVersioning
-    id: nbgv
-    uses: dotnet/nbgv@master 
-    with:
-      setAllVars: true
+  # - name: Nerdbank.GitVersioning
+  #   id: nbgv
+  #   uses: dotnet/nbgv@master 
+  #   with:
+  #     setAllVars: true
 
   - name: Get version of Nuget
     id: get-version-for-nuget
