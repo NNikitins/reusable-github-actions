@@ -34,7 +34,7 @@ runs:
       dotnet-version: ${{ inputs.dotnet-version }}
 
   - name: Nerdbank.GitVersioning
-    if: ${{ inputs.use-nbgv-in-root == 'true'}}
+    id: nbgv
     run: |
           dotnet tool install --tool-path . nbgv
           nbgv get-version -f json -p .
